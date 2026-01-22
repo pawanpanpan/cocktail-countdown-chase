@@ -1,74 +1,53 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cocktails } from "@/data/cocktails";
 import { CocktailCard } from "@/components/CocktailCard";
 import { ProgressHeader } from "@/components/ProgressHeader";
 import { CelebrationOverlay } from "@/components/CelebrationOverlay";
 import { MilestoneToast } from "@/components/MilestoneToast";
-import { AdminControls } from "@/components/AdminControls";
 import { MysteryTeaser } from "@/components/MysteryTeaser";
+import { useCocktailSync } from "@/hooks/useCocktailSync";
 
 const TOTAL_GOAL = 100;
 
 const Index = () => {
-  // Track individual counts for each cocktail
-  const [cocktailCounts, setCocktailCounts] = useState<number[]>(
-    () => new Array(cocktails.length).fill(0)
-  );
+  const {
+    cocktailCounts,
+    totalDrinksServed,
+    mostPopularIndex,
+  } = useCocktailSync();
+
   const [justCompletedIndex, setJustCompletedIndex] = useState<number | null>(null);
   const [milestoneToast, setMilestoneToast] = useState<{ name: string; visible: boolean }>({
     name: "",
     visible: false,
   });
 
-  const totalDrinksServed = cocktailCounts.reduce((sum, count) => sum + count, 0);
+  const prevTotalRef = useRef(totalDrinksServed);
+
   const isComplete = totalDrinksServed >= TOTAL_GOAL;
 
-  // Find the most popular cocktail (highest count, excluding ties at 0)
-  const mostPopularIndex = cocktailCounts.reduce((maxIdx, count, idx, arr) => {
-    if (count === 0) return maxIdx;
-    if (maxIdx === -1) return idx;
-    return count > arr[maxIdx] ? idx : maxIdx;
-  }, -1);
+  // Watch for milestone completions
+  useEffect(() => {
+    const prevTotal = prevTotalRef.current;
+    const newTotal = totalDrinksServed;
 
-  const handleIncrement = useCallback((index: number) => {
-    if (totalDrinksServed >= TOTAL_GOAL) return;
-
-    setCocktailCounts(prev => {
-      const newCounts = [...prev];
-      newCounts[index] = prev[index] + 1;
-      return newCounts;
-    });
-
-    // Check for milestone completion (every 10 total drinks)
-    const newTotal = totalDrinksServed + 1;
-    if (newTotal % 10 === 0 && newTotal <= TOTAL_GOAL) {
-      setJustCompletedIndex(index);
+    if (newTotal > prevTotal && newTotal % 10 === 0 && newTotal <= TOTAL_GOAL) {
+      // Find which cocktail was just incremented
+      const changedIndex = cocktailCounts.findIndex((count, idx) => count > 0);
+      setJustCompletedIndex(changedIndex >= 0 ? changedIndex : null);
       setMilestoneToast({
         name: `${newTotal} drinks served!`,
         visible: true,
       });
       setTimeout(() => setJustCompletedIndex(null), 600);
     }
-  }, [totalDrinksServed]);
 
-  const handleDecrement = useCallback((index: number) => {
-    setCocktailCounts(prev => {
-      if (prev[index] <= 0) return prev;
-      const newCounts = [...prev];
-      newCounts[index] = prev[index] - 1;
-      return newCounts;
-    });
-  }, []);
+    prevTotalRef.current = newTotal;
+  }, [totalDrinksServed, cocktailCounts]);
 
-  const handleReset = useCallback(() => {
-    setCocktailCounts(new Array(cocktails.length).fill(0));
-    setJustCompletedIndex(null);
-    setMilestoneToast({ name: "", visible: false });
-  }, []);
-
-  const hideMilestoneToast = useCallback(() => {
+  const hideMilestoneToast = () => {
     setMilestoneToast(prev => ({ ...prev, visible: false }));
-  }, []);
+  };
 
   return (
     <div className="min-h-screen bg-background overflow-hidden relative">
@@ -125,9 +104,6 @@ const Index = () => {
             ))}
           </div>
         </main>
-
-        {/* Footer Spacer for Controls */}
-        <div className="h-24" />
       </div>
 
       {/* Milestone Toast */}
@@ -139,16 +115,6 @@ const Index = () => {
 
       {/* Celebration Overlay */}
       <CelebrationOverlay isActive={isComplete} />
-
-      {/* Admin Controls */}
-      <AdminControls
-        cocktails={cocktails}
-        cocktailCounts={cocktailCounts}
-        onIncrement={handleIncrement}
-        onDecrement={handleDecrement}
-        onReset={handleReset}
-        totalDrinksServed={totalDrinksServed}
-      />
     </div>
   );
 };
