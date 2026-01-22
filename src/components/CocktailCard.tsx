@@ -3,14 +3,13 @@ import type { Cocktail } from "@/data/cocktails";
 
 interface CocktailCardProps {
   cocktail: Cocktail;
-  progress: number; // 0-10
-  isComplete: boolean;
+  count: number;
+  isMostPopular: boolean;
   justCompleted: boolean;
 }
 
-export const CocktailCard = ({ cocktail, progress, isComplete, justCompleted }: CocktailCardProps) => {
+export const CocktailCard = ({ cocktail, count, isMostPopular, justCompleted }: CocktailCardProps) => {
   const [animating, setAnimating] = useState(false);
-  const fillPercentage = (progress / 10) * 100;
 
   useEffect(() => {
     if (justCompleted) {
@@ -24,81 +23,59 @@ export const CocktailCard = ({ cocktail, progress, isComplete, justCompleted }: 
     <div
       className={`
         relative overflow-hidden rounded-2xl transition-all duration-500
-        ${isComplete 
-          ? 'unlocked-card ring-2 ring-accent/50' 
-          : progress > 0 
-            ? 'glass-card ring-1 ring-primary/30' 
-            : 'locked-card'
+        ${isMostPopular 
+          ? 'ring-2 ring-accent shadow-lg shadow-accent/30 scale-105' 
+          : 'glass-card ring-1 ring-primary/30'
         }
         ${animating ? 'animate-celebrate' : ''}
       `}
     >
+      {/* Most Popular Badge */}
+      {isMostPopular && (
+        <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-r from-accent via-primary to-accent text-center py-1 text-xs font-bold text-accent-foreground uppercase tracking-wider animate-pulse">
+          🔥 Most Popular
+        </div>
+      )}
+
       {/* Background Image */}
       <div className="relative aspect-[3/4] overflow-hidden">
         <img
           src={cocktail.image}
           alt={cocktail.name}
-          className={`
-            absolute inset-0 w-full h-full object-cover transition-all duration-700
-            ${isComplete 
-              ? 'scale-105 brightness-110 saturate-125' 
-              : progress > 0 
-                ? 'brightness-75 saturate-75' 
-                : 'brightness-30 saturate-0 blur-sm'
-            }
-          `}
+          className="absolute inset-0 w-full h-full object-cover transition-all duration-700 scale-105 brightness-110 saturate-125"
         />
 
-        {/* Liquid Fill Overlay */}
-        {!isComplete && progress > 0 && (
-          <div
-            className="absolute bottom-0 left-0 right-0 liquid-fill animate-liquid transition-all duration-700"
-            style={{ height: `${fillPercentage}%` }}
-          />
-        )}
+        {/* Subtle overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
 
-        {/* Locked Overlay */}
-        {progress === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-            <div className="text-muted-foreground text-6xl opacity-30">🔒</div>
-          </div>
-        )}
-
-        {/* Completion Glow */}
-        {isComplete && (
-          <div className="absolute inset-0 bg-gradient-to-t from-accent/20 via-transparent to-transparent" />
-        )}
-
-        {/* Progress Badge */}
+        {/* Count Badge */}
         <div className={`
           absolute top-3 right-3 px-3 py-1 rounded-full text-sm font-bold
           transition-all duration-300
-          ${isComplete 
+          ${isMostPopular 
             ? 'bg-accent text-accent-foreground' 
-            : progress > 0 
+            : count > 0 
               ? 'bg-primary/90 text-primary-foreground' 
               : 'bg-muted/80 text-muted-foreground'
           }
         `}>
-          {progress}/10
+          {count}
         </div>
       </div>
 
       {/* Name Label */}
       <div className={`
         p-4 text-center transition-all duration-500
-        ${isComplete 
+        ${isMostPopular 
           ? 'bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20' 
           : 'bg-card/80'
         }
       `}>
         <h3 className={`
           font-display text-xl tracking-wide transition-all duration-500
-          ${isComplete 
+          ${isMostPopular 
             ? 'text-accent neon-text-accent' 
-            : progress > 0 
-              ? 'text-foreground' 
-              : 'text-muted-foreground'
+            : 'text-foreground'
           }
         `}>
           {cocktail.name}

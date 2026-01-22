@@ -1,64 +1,67 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { cocktails } from "@/data/cocktails";
 import { CocktailCard } from "@/components/CocktailCard";
 import { ProgressHeader } from "@/components/ProgressHeader";
 import { CelebrationOverlay } from "@/components/CelebrationOverlay";
 import { MilestoneToast } from "@/components/MilestoneToast";
 import { AdminControls } from "@/components/AdminControls";
+import { MysteryTeaser } from "@/components/MysteryTeaser";
 
 const TOTAL_GOAL = 100;
-const DRINKS_PER_COCKTAIL = 10;
 
 const Index = () => {
-  const [drinksServed, setDrinksServed] = useState(0);
+  // Track individual counts for each cocktail
+  const [cocktailCounts, setCocktailCounts] = useState<number[]>(
+    () => new Array(cocktails.length).fill(0)
+  );
   const [justCompletedIndex, setJustCompletedIndex] = useState<number | null>(null);
   const [milestoneToast, setMilestoneToast] = useState<{ name: string; visible: boolean }>({
     name: "",
     visible: false,
   });
 
-  const isComplete = drinksServed >= TOTAL_GOAL;
+  const totalDrinksServed = cocktailCounts.reduce((sum, count) => sum + count, 0);
+  const isComplete = totalDrinksServed >= TOTAL_GOAL;
 
-  // Calculate progress for each cocktail (0-10)
-  const getCocktailProgress = useCallback((index: number) => {
-    const drinksForThisCocktail = Math.floor(drinksServed / DRINKS_PER_COCKTAIL);
-    const remainder = drinksServed % DRINKS_PER_COCKTAIL;
+  // Find the most popular cocktail (highest count, excluding ties at 0)
+  const mostPopularIndex = cocktailCounts.reduce((maxIdx, count, idx, arr) => {
+    if (count === 0) return maxIdx;
+    if (maxIdx === -1) return idx;
+    return count > arr[maxIdx] ? idx : maxIdx;
+  }, -1);
 
-    if (index < drinksForThisCocktail) {
-      return DRINKS_PER_COCKTAIL; // Fully complete
-    } else if (index === drinksForThisCocktail) {
-      return remainder; // Partial progress
-    }
-    return 0; // Not started
-  }, [drinksServed]);
+  const handleIncrement = useCallback((index: number) => {
+    if (totalDrinksServed >= TOTAL_GOAL) return;
 
-  const handleIncrement = useCallback(() => {
-    if (drinksServed >= TOTAL_GOAL) return;
+    setCocktailCounts(prev => {
+      const newCounts = [...prev];
+      newCounts[index] = prev[index] + 1;
+      return newCounts;
+    });
 
-    const newCount = drinksServed + 1;
-    setDrinksServed(newCount);
-
-    // Check for milestone completion
-    if (newCount % DRINKS_PER_COCKTAIL === 0) {
-      const completedIndex = Math.floor(newCount / DRINKS_PER_COCKTAIL) - 1;
-      setJustCompletedIndex(completedIndex);
+    // Check for milestone completion (every 10 total drinks)
+    const newTotal = totalDrinksServed + 1;
+    if (newTotal % 10 === 0 && newTotal <= TOTAL_GOAL) {
+      setJustCompletedIndex(index);
       setMilestoneToast({
-        name: cocktails[completedIndex].name,
+        name: `${newTotal} drinks served!`,
         visible: true,
       });
-
-      // Clear the just completed state after animation
       setTimeout(() => setJustCompletedIndex(null), 600);
     }
-  }, [drinksServed]);
+  }, [totalDrinksServed]);
 
-  const handleDecrement = useCallback(() => {
-    if (drinksServed <= 0) return;
-    setDrinksServed(prev => prev - 1);
-  }, [drinksServed]);
+  const handleDecrement = useCallback((index: number) => {
+    setCocktailCounts(prev => {
+      if (prev[index] <= 0) return prev;
+      const newCounts = [...prev];
+      newCounts[index] = prev[index] - 1;
+      return newCounts;
+    });
+  }, []);
 
   const handleReset = useCallback(() => {
-    setDrinksServed(0);
+    setCocktailCounts(new Array(cocktails.length).fill(0));
     setJustCompletedIndex(null);
     setMilestoneToast({ name: "", visible: false });
   }, []);
@@ -95,10 +98,13 @@ const Index = () => {
       <div className="relative z-10 flex flex-col h-screen">
         {/* Header */}
         <ProgressHeader 
-          drinksServed={drinksServed} 
+          drinksServed={totalDrinksServed} 
           totalGoal={TOTAL_GOAL} 
           isCelebrating={isComplete}
         />
+
+        {/* Mystery Teaser */}
+        <MysteryTeaser drinksRemaining={TOTAL_GOAL - totalDrinksServed} isComplete={isComplete} />
 
         {/* Cocktail Grid */}
         <main className="flex-1 flex items-center justify-center p-4 md:p-8">
@@ -111,8 +117,8 @@ const Index = () => {
               >
                 <CocktailCard
                   cocktail={cocktail}
-                  progress={getCocktailProgress(index)}
-                  isComplete={getCocktailProgress(index) === DRINKS_PER_COCKTAIL}
+                  count={cocktailCounts[index]}
+                  isMostPopular={mostPopularIndex === index}
                   justCompleted={justCompletedIndex === index}
                 />
               </div>
@@ -136,10 +142,12 @@ const Index = () => {
 
       {/* Admin Controls */}
       <AdminControls
+        cocktails={cocktails}
+        cocktailCounts={cocktailCounts}
         onIncrement={handleIncrement}
         onDecrement={handleDecrement}
         onReset={handleReset}
-        drinksServed={drinksServed}
+        totalDrinksServed={totalDrinksServed}
       />
     </div>
   );
