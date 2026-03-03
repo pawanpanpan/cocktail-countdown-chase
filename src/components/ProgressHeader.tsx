@@ -9,7 +9,6 @@ interface ProgressHeaderProps {
 export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: ProgressHeaderProps) => {
   const [displayCount, setDisplayCount] = useState(drinksServed);
 
-  // Animated counter
   useEffect(() => {
     if (displayCount !== drinksServed) {
       const timer = setTimeout(() => {
@@ -23,59 +22,32 @@ export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: Progr
     }
   }, [displayCount, drinksServed]);
 
-  const progressPercentage = (drinksServed / totalGoal) * 100;
+  const progressPercentage = Math.min((drinksServed / totalGoal) * 100, 100);
 
   return (
     <header className="text-center py-8 px-4">
-      <h1 
-        className={`
-          font-display text-7xl md:text-8xl lg:text-9xl tracking-wider mb-4
-          transition-all duration-500
-          ${isCelebrating 
-            ? 'text-accent neon-text-accent animate-float' 
-            : 'text-primary neon-text'
-          }
-        `}
-      >
-        COCKTAIL NIGHT
+      <h1 className="font-display text-6xl md:text-7xl lg:text-8xl text-primary mb-1 uppercase">
+        The Thorndike
       </h1>
+      <p className="text-sm md:text-base uppercase tracking-[0.3em] text-muted-foreground mb-6">
+        Speakeasy
+      </p>
 
-      <div className="max-w-2xl mx-auto">
-        <p className="text-2xl md:text-3xl font-display tracking-wide text-foreground/90 mb-6">
+      <div className="max-w-xl mx-auto">
+        <p className="text-xl md:text-2xl font-sans text-foreground mb-4">
           Drinks Served:{" "}
-          <span className={`
-            inline-block min-w-[3ch] transition-all duration-300
-            ${isCelebrating ? 'text-accent' : 'text-primary'}
-          `}>
+          <span className={`font-bold ${isCelebrating ? 'text-accent' : 'text-primary'}`}>
             {displayCount}
           </span>
           <span className="text-muted-foreground"> / {totalGoal}</span>
         </p>
 
         {/* Progress Bar */}
-        <div className="relative h-4 bg-muted rounded-full overflow-hidden">
+        <div className="relative h-2 bg-muted rounded-full overflow-hidden">
           <div
-            className={`
-              absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out
-              ${isCelebrating 
-                ? 'bg-gradient-to-r from-celebration via-accent to-primary animate-shimmer' 
-                : 'bg-gradient-to-r from-primary to-accent'
-              }
-            `}
-            style={{ 
-              width: `${progressPercentage}%`,
-              backgroundSize: '200% 100%',
-            }}
+            className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out bg-primary"
+            style={{ width: `${progressPercentage}%` }}
           />
-          
-          {/* Milestone Markers */}
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
-            <div
-              key={i}
-              className="absolute top-0 bottom-0 w-px bg-background/50"
-              style={{ left: `${i * 10}%` }}
-            />
-          ))}
         </div>
       </div>
     </header>

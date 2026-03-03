@@ -14,6 +14,7 @@ const Index = () => {
     cocktailCounts,
     totalDrinksServed,
     mostPopularIndex,
+    soldOut,
   } = useCocktailSync();
 
   const [justCompletedIndex, setJustCompletedIndex] = useState<number | null>(null);
@@ -21,29 +22,27 @@ const Index = () => {
     name: "",
     visible: false,
   });
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const prevTotalRef = useRef(totalDrinksServed);
 
-  const isComplete = totalDrinksServed >= TOTAL_GOAL;
+  const isUnlocked = totalDrinksServed >= TOTAL_GOAL;
 
   // Watch for milestone completions
   useEffect(() => {
     const prevTotal = prevTotalRef.current;
     const newTotal = totalDrinksServed;
 
+    if (newTotal >= TOTAL_GOAL && prevTotal < TOTAL_GOAL) {
+      setShowCelebration(true);
+    }
+
     if (newTotal > prevTotal && newTotal % 10 === 0 && newTotal <= TOTAL_GOAL) {
-      // Find which cocktail was just incremented
-      const changedIndex = cocktailCounts.findIndex((count, idx) => count > 0);
-      setJustCompletedIndex(changedIndex >= 0 ? changedIndex : null);
-      setMilestoneToast({
-        name: `${newTotal} drinks served!`,
-        visible: true,
-      });
-      setTimeout(() => setJustCompletedIndex(null), 600);
+      setMilestoneToast({ name: `${newTotal} drinks served!`, visible: true });
     }
 
     prevTotalRef.current = newTotal;
-  }, [totalDrinksServed, cocktailCounts]);
+  }, [totalDrinksServed]);
 
   const hideMilestoneToast = () => {
     setMilestoneToast(prev => ({ ...prev, visible: false }));
@@ -51,70 +50,45 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-hidden relative">
-      {/* Background Ambient */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div 
-          className="absolute inset-0 opacity-20"
-          style={{
-            background: 'radial-gradient(ellipse at 50% 0%, hsl(15, 85%, 60%) 0%, transparent 50%)',
-          }}
-        />
-        <div 
-          className="absolute inset-0 opacity-10"
-          style={{
-            background: 'radial-gradient(ellipse at 0% 100%, hsl(175, 70%, 45%) 0%, transparent 40%)',
-          }}
-        />
-        <div 
-          className="absolute inset-0 opacity-10"
-          style={{
-            background: 'radial-gradient(ellipse at 100% 100%, hsl(45, 90%, 55%) 0%, transparent 40%)',
-          }}
-        />
-      </div>
-
       {/* Main Content */}
       <div className="relative z-10 flex flex-col h-screen">
-        {/* Header */}
-        <ProgressHeader 
-          drinksServed={totalDrinksServed} 
-          totalGoal={TOTAL_GOAL} 
-          isCelebrating={isComplete}
+        <ProgressHeader
+          drinksServed={totalDrinksServed}
+          totalGoal={TOTAL_GOAL}
+          isCelebrating={isUnlocked}
         />
 
-        {/* Mystery Teaser */}
-        <MysteryTeaser drinksRemaining={TOTAL_GOAL - totalDrinksServed} isComplete={isComplete} />
+        <MysteryTeaser drinksRemaining={Math.max(0, TOTAL_GOAL - totalDrinksServed)} isUnlocked={isUnlocked} />
 
         {/* Cocktail Grid */}
         <main className="flex-1 flex items-center justify-center p-4 md:p-8">
-          <div className="grid grid-cols-5 grid-rows-2 gap-4 md:gap-6 max-w-7xl w-full">
-            {cocktails.map((cocktail, index) => (
-              <div 
-                key={cocktail.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <CocktailCard
-                  cocktail={cocktail}
-                  count={cocktailCounts[index]}
-                  isMostPopular={mostPopularIndex === index}
-                  justCompleted={justCompletedIndex === index}
-                />
-              </div>
-            ))}
+          <div className="grid grid-cols-4 md:grid-cols-6 gap-3 md:gap-5 max-w-6xl w-full">
+            {cocktails.map((cocktail, index) => {
+              const isLocked = cocktail.locked && !isUnlocked;
+              return (
+                <div key={cocktail.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
+                  <CocktailCard
+                    cocktail={cocktail}
+                    count={cocktailCounts[index] || 0}
+                    isMostPopular={mostPopularIndex === index}
+                    justCompleted={justCompletedIndex === index}
+                    isSoldOut={soldOut[index] || false}
+                    isLocked={!!isLocked}
+                  />
+                </div>
+              );
+            })}
           </div>
         </main>
       </div>
 
-      {/* Milestone Toast */}
       <MilestoneToast
         cocktailName={milestoneToast.name}
-        isVisible={milestoneToast.visible && !isComplete}
+        isVisible={milestoneToast.visible && !showCelebration}
         onHide={hideMilestoneToast}
       />
 
-      {/* Celebration Overlay */}
-      <CelebrationOverlay isActive={isComplete} />
+      <CelebrationOverlay isActive={showCelebration} />
     </div>
   );
 };

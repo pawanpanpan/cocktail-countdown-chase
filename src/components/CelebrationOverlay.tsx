@@ -6,16 +6,16 @@ interface CelebrationOverlayProps {
 }
 
 const CONFETTI_COLORS = [
-  'hsl(15, 85%, 60%)',   // Primary coral
-  'hsl(45, 90%, 55%)',   // Accent gold
-  'hsl(330, 85%, 60%)',  // Celebration pink
-  'hsl(175, 70%, 45%)',  // Secondary teal
-  'hsl(0, 0%, 100%)',    // White
+  'hsl(215, 40%, 20%)',
+  'hsl(38, 60%, 50%)',
+  'hsl(38, 55%, 65%)',
+  'hsl(215, 30%, 40%)',
+  'hsl(40, 20%, 96%)',
 ];
 
 const Confetti = ({ delay, color }: { delay: number; color: string }) => {
   const randomX = Math.random() * 100;
-  const randomSize = 8 + Math.random() * 12;
+  const randomSize = 6 + Math.random() * 10;
   const randomDuration = 2 + Math.random() * 2;
 
   return (
@@ -41,15 +41,12 @@ export const CelebrationOverlay = ({ isActive }: CelebrationOverlayProps) => {
 
   useEffect(() => {
     if (isActive) {
-      // Generate confetti
-      const pieces = Array.from({ length: 100 }, (_, i) => ({
+      const pieces = Array.from({ length: 80 }, (_, i) => ({
         id: i,
         delay: Math.random() * 3,
         color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
       }));
       setConfettiPieces(pieces);
-
-      // Show text after a short delay
       const textTimer = setTimeout(() => setShowText(true), 500);
       return () => clearTimeout(textTimer);
     } else {
@@ -62,34 +59,23 @@ export const CelebrationOverlay = ({ isActive }: CelebrationOverlayProps) => {
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute inset-0 celebration-bg animate-pulse-glow" />
+      <div className="absolute inset-0 bg-background/60" />
 
-      {/* Radial Light Burst */}
-      <div 
-        className="absolute inset-0 opacity-30"
-        style={{
-          background: 'radial-gradient(circle at 50% 50%, hsl(45, 90%, 55%) 0%, transparent 50%)',
-        }}
-      />
-
-      {/* Confetti */}
       {confettiPieces.map(piece => (
         <Confetti key={piece.id} delay={piece.delay} color={piece.color} />
       ))}
 
-      {/* Secret Drink Reveal */}
       {showText && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center animate-scale-in">
-            <div className="text-6xl mb-4">🏆</div>
-            <h2 className="font-display text-5xl md:text-7xl lg:text-8xl text-accent neon-text-accent mb-4 animate-float">
-              SECRET DRINK UNLOCKED
+            <div className="text-5xl mb-4">✦</div>
+            <h2 className="font-display text-4xl md:text-6xl lg:text-7xl text-primary mb-4 animate-float uppercase">
+              Secret Drinks Unlocked
             </h2>
-            <p className="font-display text-3xl md:text-4xl text-foreground/90 mb-2">
+            <p className="font-display text-2xl md:text-3xl text-foreground mb-2">
               {SECRET_DRINK.name}
             </p>
-            <p className="text-xl text-muted-foreground italic">
+            <p className="text-base text-muted-foreground italic">
               {SECRET_DRINK.tagline}
             </p>
           </div>
