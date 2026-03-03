@@ -26,16 +26,25 @@ export const CocktailCard = ({ cocktail, count, isMostPopular, justCompleted, is
     <div
       className={`
         relative overflow-hidden rounded-lg transition-all duration-500
-        ${isLocked ? 'locked-card' : ''}
-        ${isMostPopular && !isLocked ? 'ring-2 ring-accent shadow-lg scale-[1.03]' : 'glass-card'}
+        ${isLocked ? 'locked-card ring-2 ring-accent/50 shadow-[0_0_15px_hsl(var(--accent)/0.25)]' : ''}
+        ${cocktail.locked && !isLocked ? 'ring-2 ring-accent shadow-[0_0_20px_hsl(var(--accent)/0.35)] scale-[1.03]' : ''}
+        ${isMostPopular && !isLocked && !cocktail.locked ? 'ring-2 ring-accent shadow-lg scale-[1.03]' : ''}
+        ${!isMostPopular && !isLocked && !cocktail.locked ? 'glass-card' : ''}
         ${isSoldOut && !isLocked ? 'grayscale opacity-70' : ''}
         ${animating ? 'animate-celebrate' : ''}
       `}
     >
       {/* Most Popular Badge */}
-      {isMostPopular && !isLocked && !isSoldOut && (
+      {isMostPopular && !isLocked && !isSoldOut && !cocktail.locked && (
         <div className="absolute top-0 left-0 right-0 z-20 bg-accent text-accent-foreground text-center py-1 text-[10px] font-bold uppercase tracking-widest">
           Most Popular
+        </div>
+      )}
+
+      {/* Secret Drink Badge - shown when unlocked */}
+      {cocktail.locked && !isLocked && (
+        <div className="absolute top-0 left-0 right-0 z-20 bg-accent text-accent-foreground text-center py-1 text-[10px] font-bold uppercase tracking-widest">
+          ✦ Secret Drink ✦
         </div>
       )}
 
@@ -50,9 +59,10 @@ export const CocktailCard = ({ cocktail, count, isMostPopular, justCompleted, is
 
       {/* Locked Overlay */}
       {isLocked && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-foreground/60">
-          <Lock className="w-8 h-8 text-background mb-2" />
-          <p className="text-background text-xs font-bold uppercase tracking-wider">Unlocks at 100</p>
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-foreground/60 backdrop-blur-sm">
+          <Lock className="w-8 h-8 text-accent mb-2 animate-pulse" />
+          <p className="text-background text-xs font-bold uppercase tracking-wider">Secret</p>
+          <p className="text-accent text-[10px] font-bold uppercase tracking-wider mt-1">Unlocks at 100</p>
         </div>
       )}
 
