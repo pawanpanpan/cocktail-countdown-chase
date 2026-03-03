@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import type { Cocktail } from "@/data/cocktails";
+import { Lock } from "lucide-react";
 
 interface CocktailCardProps {
   cocktail: Cocktail;
   count: number;
   isMostPopular: boolean;
   justCompleted: boolean;
+  isSoldOut: boolean;
+  isLocked: boolean;
 }
 
-export const CocktailCard = ({ cocktail, count, isMostPopular, justCompleted }: CocktailCardProps) => {
+export const CocktailCard = ({ cocktail, count, isMostPopular, justCompleted, isSoldOut, isLocked }: CocktailCardProps) => {
   const [animating, setAnimating] = useState(false);
 
   useEffect(() => {
@@ -22,62 +25,65 @@ export const CocktailCard = ({ cocktail, count, isMostPopular, justCompleted }: 
   return (
     <div
       className={`
-        relative overflow-hidden rounded-2xl transition-all duration-500
-        ${isMostPopular 
-          ? 'ring-2 ring-accent shadow-lg shadow-accent/30 scale-105' 
-          : 'glass-card ring-1 ring-primary/30'
-        }
+        relative overflow-hidden rounded-lg transition-all duration-500
+        ${isLocked ? 'locked-card' : ''}
+        ${isMostPopular && !isLocked ? 'ring-2 ring-accent shadow-lg scale-[1.03]' : 'glass-card'}
+        ${isSoldOut && !isLocked ? 'grayscale opacity-70' : ''}
         ${animating ? 'animate-celebrate' : ''}
       `}
     >
       {/* Most Popular Badge */}
-      {isMostPopular && (
-        <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-r from-accent via-primary to-accent text-center py-1 text-xs font-bold text-accent-foreground uppercase tracking-wider animate-pulse">
-          🔥 Most Popular
+      {isMostPopular && !isLocked && !isSoldOut && (
+        <div className="absolute top-0 left-0 right-0 z-20 bg-accent text-accent-foreground text-center py-1 text-[10px] font-bold uppercase tracking-widest">
+          Most Popular
         </div>
       )}
 
-      {/* Background Image */}
+      {/* Sold Out Banner */}
+      {isSoldOut && !isLocked && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center">
+          <div className="bg-destructive text-destructive-foreground px-4 py-2 rounded text-sm font-bold uppercase tracking-widest rotate-[-15deg]">
+            Sold Out
+          </div>
+        </div>
+      )}
+
+      {/* Locked Overlay */}
+      {isLocked && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-foreground/60">
+          <Lock className="w-8 h-8 text-background mb-2" />
+          <p className="text-background text-xs font-bold uppercase tracking-wider">Unlocks at 100</p>
+        </div>
+      )}
+
+      {/* Image */}
       <div className="relative aspect-[3/4] overflow-hidden">
         <img
           src={cocktail.image}
           alt={cocktail.name}
-          className="absolute inset-0 w-full h-full object-cover transition-all duration-700 scale-105 brightness-110 saturate-125"
+          className="absolute inset-0 w-full h-full object-cover"
         />
-
-        {/* Subtle overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 via-transparent to-transparent" />
 
         {/* Count Badge */}
-        <div className={`
-          absolute top-3 right-3 px-3 py-1 rounded-full text-sm font-bold
-          transition-all duration-300
-          ${isMostPopular 
-            ? 'bg-accent text-accent-foreground' 
-            : count > 0 
-              ? 'bg-primary/90 text-primary-foreground' 
-              : 'bg-muted/80 text-muted-foreground'
-          }
-        `}>
-          {count}
-        </div>
+        {!isLocked && (
+          <div className={`
+            absolute top-2 right-2 px-2.5 py-0.5 rounded-full text-xs font-bold
+            ${isMostPopular
+              ? 'bg-accent text-accent-foreground'
+              : count > 0
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground'
+            }
+          `}>
+            {count}
+          </div>
+        )}
       </div>
 
-      {/* Name Label */}
-      <div className={`
-        p-4 text-center transition-all duration-500
-        ${isMostPopular 
-          ? 'bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20' 
-          : 'bg-card/80'
-        }
-      `}>
-        <h3 className={`
-          font-display text-xl tracking-wide transition-all duration-500
-          ${isMostPopular 
-            ? 'text-accent neon-text-accent' 
-            : 'text-foreground'
-          }
-        `}>
+      {/* Name */}
+      <div className="p-3 text-center bg-card">
+        <h3 className="font-sans text-sm font-bold tracking-wide text-foreground uppercase">
           {cocktail.name}
         </h3>
       </div>

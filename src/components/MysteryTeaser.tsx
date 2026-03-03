@@ -1,23 +1,24 @@
 interface MysteryTeaserProps {
   drinksRemaining: number;
-  isComplete: boolean;
+  isUnlocked: boolean;
 }
 
-export const MysteryTeaser = ({ drinksRemaining, isComplete }: MysteryTeaserProps) => {
-  if (isComplete) return null;
-
+export const MysteryTeaser = ({ drinksRemaining, isUnlocked }: MysteryTeaserProps) => {
   return (
     <div className="text-center py-2 px-4">
-      <div className="inline-flex items-center gap-3 glass-card px-6 py-3 rounded-full">
-        <span className="text-2xl animate-pulse">🍹</span>
-        <p className="text-lg md:text-xl font-medium text-foreground">
-          <span className="text-muted-foreground">Only </span>
-          <span className="text-accent font-bold neon-text-accent">{drinksRemaining}</span>
-          <span className="text-muted-foreground"> drinks until the </span>
-          <span className="text-primary font-bold neon-text">Mystery Cocktail</span>
-          <span className="text-muted-foreground"> is unlocked!</span>
-        </p>
-        <span className="text-2xl animate-pulse">✨</span>
+      <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full border border-border bg-card">
+        {isUnlocked ? (
+          <p className="text-sm md:text-base text-accent font-bold uppercase tracking-wider">
+            ✦ Secret drinks unlocked ✦
+          </p>
+        ) : (
+          <p className="text-sm md:text-base text-muted-foreground">
+            <span className="text-foreground font-bold">{drinksRemaining}</span>
+            {" "}drinks until{" "}
+            <span className="text-primary font-bold">2 secret cocktails</span>
+            {" "}are unlocked
+          </p>
+        )}
       </div>
     </div>
   );

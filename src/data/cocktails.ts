@@ -3,6 +3,7 @@ export interface Cocktail {
   name: string;
   image: string;
   color: string;
+  locked?: boolean; // unlocked at 100 drinks
 }
 
 export const cocktails: Cocktail[] = [
@@ -16,6 +17,8 @@ export const cocktails: Cocktail[] = [
   { id: 8, name: "Blue Lagoon", image: "/cocktails/bluelagoon.jpg", color: "hsl(195, 85%, 55%)" },
   { id: 9, name: "Whiskey Sour", image: "/cocktails/whiskeysour.jpg", color: "hsl(45, 90%, 55%)" },
   { id: 10, name: "Espresso Dream", image: "/cocktails/espresso.jpg", color: "hsl(30, 40%, 30%)" },
+  { id: 11, name: "The Phoenix Rise", image: "/cocktails/margarita.jpg", color: "hsl(15, 85%, 55%)", locked: true },
+  { id: 12, name: "Midnight Velvet", image: "/cocktails/martini.jpg", color: "hsl(270, 60%, 40%)", locked: true },
 ];
 
 export const SECRET_DRINK = {
