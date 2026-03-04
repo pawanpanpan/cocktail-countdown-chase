@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { SECRET_DRINK } from "@/data/cocktails";
 
 interface CelebrationOverlayProps {
   isActive: boolean;
@@ -72,12 +71,6 @@ export const CelebrationOverlay = ({ isActive }: CelebrationOverlayProps) => {
             <h2 className="font-display text-4xl md:text-6xl lg:text-7xl text-primary mb-4 animate-float uppercase">
               Secret Drinks Unlocked
             </h2>
-            <p className="font-display text-2xl md:text-3xl text-foreground mb-2">
-              {SECRET_DRINK.name}
-            </p>
-            <p className="text-base text-muted-foreground italic">
-              {SECRET_DRINK.tagline}
-            </p>
           </div>
         </div>
       )}

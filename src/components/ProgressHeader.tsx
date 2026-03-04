@@ -44,7 +44,7 @@ export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: Progr
         <img
           src="/logo.png"
           alt="Logo"
-          className="mx-auto mb-3 max-h-40 w-auto object-contain"
+          className="mx-auto mb-3 max-h-56 w-auto object-contain"
           onError={() => setLogoVisible(false)}
         />
       )}
@@ -63,7 +63,7 @@ export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: Progr
 
       <div className="max-w-xl mx-auto">
         <p className="text-xl md:text-2xl font-sans text-foreground mb-4">
-          Drinks Served:{" "}
+          DRINKS SERVED:{" "}
           <span className={`font-bold ${isCelebrating ? 'text-accent' : 'text-primary'}`}>
             {displayCount}
           </span>
