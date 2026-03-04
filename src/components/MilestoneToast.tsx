@@ -73,7 +73,6 @@ export const MilestoneToast = ({ drinkCount, isVisible, onHide }: MilestoneToast
       {showText && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center animate-scale-in">
-            <div className="text-5xl mb-4">🍸</div>
             <h2 className="font-display text-4xl md:text-6xl lg:text-7xl text-primary mb-2 animate-float uppercase">
               {drinkCount} Drinks Served!
             </h2>
