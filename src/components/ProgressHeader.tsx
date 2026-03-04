@@ -11,6 +11,7 @@ interface ProgressHeaderProps {
 export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: ProgressHeaderProps) => {
   const navigate = useNavigate();
   const [displayCount, setDisplayCount] = useState(drinksServed);
+  const [logoVisible, setLogoVisible] = useState(true);
 
   useEffect(() => {
     if (displayCount !== drinksServed) {
@@ -38,12 +39,27 @@ export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: Progr
         <Settings size={20} />
       </button>
 
-      <h1 className="font-display text-5xl md:text-6xl lg:text-7xl text-primary mb-1 uppercase tracking-[0.08em]">
-        The Thorndike
-      </h1>
-      <p className="text-xs md:text-sm uppercase tracking-[0.4em] text-muted-foreground mb-4">
-        Speakeasy
-      </p>
+      {/* Logo: place your logo file at public/logo.png (or .svg/.jpg/.webp) */}
+      {logoVisible && (
+        <img
+          src="/logo.png"
+          alt="Logo"
+          className="mx-auto mb-2 max-h-20 w-auto object-contain"
+          onError={() => setLogoVisible(false)}
+        />
+      )}
+
+      {/* Fallback text title shown when no logo is present */}
+      {!logoVisible && (
+        <>
+          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl text-primary mb-1 uppercase tracking-[0.08em]">
+            The Thorndike
+          </h1>
+          <p className="text-xs md:text-sm uppercase tracking-[0.4em] text-muted-foreground mb-4">
+            Speakeasy
+          </p>
+        </>
+      )}
 
       <div className="max-w-xl mx-auto">
         <p className="text-xl md:text-2xl font-sans text-foreground mb-4">
