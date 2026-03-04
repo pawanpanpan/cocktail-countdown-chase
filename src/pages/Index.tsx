@@ -61,8 +61,8 @@ const Index = () => {
         <MysteryTeaser drinksRemaining={Math.max(0, TOTAL_GOAL - totalDrinksServed)} isUnlocked={isUnlocked} />
 
         {/* Cocktail Grid */}
-        <main className="flex-1 flex items-center justify-center p-4 md:p-8">
-          <div className="grid grid-cols-4 md:grid-cols-6 gap-3 md:gap-5 max-w-6xl w-full">
+        <main className="flex-1 flex items-center justify-center p-3 md:p-6">
+          <div className="grid grid-cols-4 md:grid-cols-6 gap-3 md:gap-4 max-w-7xl w-full">
             {cocktails.map((cocktail, index) => {
               const isLocked = cocktail.locked && !isUnlocked;
               return (
