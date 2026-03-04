@@ -1,127 +1,99 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { cocktails } from "@/data/cocktails";
 
-const CHANNEL_NAME = "cocktail-sync";
-const STORAGE_KEY = "cocktail-counts";
-const SOLDOUT_KEY = "cocktail-soldout";
-
-interface SyncMessage {
-  type: "update";
+interface State {
   counts: number[];
   soldOut: boolean[];
 }
 
+const DEFAULT_STATE: State = {
+  counts: new Array(cocktails.length).fill(0),
+  soldOut: new Array(cocktails.length).fill(false),
+};
+
 export const useCocktailSync = () => {
-  const [cocktailCounts, setCocktailCounts] = useState<number[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        // Ensure array length matches cocktails
-        if (parsed.length < cocktails.length) {
-          return [...parsed, ...new Array(cocktails.length - parsed.length).fill(0)];
-        }
-        return parsed;
-      } catch {
-        return new Array(cocktails.length).fill(0);
-      }
-    }
-    return new Array(cocktails.length).fill(0);
-  });
-
-  const [soldOut, setSoldOut] = useState<boolean[]>(() => {
-    const stored = localStorage.getItem(SOLDOUT_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (parsed.length < cocktails.length) {
-          return [...parsed, ...new Array(cocktails.length - parsed.length).fill(false)];
-        }
-        return parsed;
-      } catch {
-        return new Array(cocktails.length).fill(false);
-      }
-    }
-    return new Array(cocktails.length).fill(false);
-  });
-
-  const [channel] = useState(() => new BroadcastChannel(CHANNEL_NAME));
+  const [state, setState] = useState<State>(DEFAULT_STATE);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   useEffect(() => {
-    const handleMessage = (event: MessageEvent<SyncMessage>) => {
-      if (event.data.type === "update") {
-        setCocktailCounts(event.data.counts);
-        setSoldOut(event.data.soldOut);
-      }
+    // Fetch current state on mount
+    fetch("/api/state")
+      .then((r) => r.json())
+      .then((data) => {
+        // Ensure array lengths match in case cocktails list changed
+        const counts = data.counts ?? [];
+        const soldOut = data.soldOut ?? [];
+        setState({
+          counts: cocktails.map((_, i) => counts[i] ?? 0),
+          soldOut: cocktails.map((_, i) => soldOut[i] ?? false),
+        });
+      })
+      .catch(() => {});
+
+    // Subscribe to real-time updates via SSE
+    const es = new EventSource("/api/events");
+    es.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        setState({
+          counts: cocktails.map((_, i) => (data.counts ?? [])[i] ?? 0),
+          soldOut: cocktails.map((_, i) => (data.soldOut ?? [])[i] ?? false),
+        });
+      } catch {}
     };
 
-    channel.addEventListener("message", handleMessage);
+    return () => es.close();
+  }, []);
 
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEY && event.newValue) {
-        try { setCocktailCounts(JSON.parse(event.newValue)); } catch {}
-      }
-      if (event.key === SOLDOUT_KEY && event.newValue) {
-        try { setSoldOut(JSON.parse(event.newValue)); } catch {}
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-
-    return () => {
-      channel.removeEventListener("message", handleMessage);
-      window.removeEventListener("storage", handleStorage);
-    };
-  }, [channel]);
-
-  const broadcast = useCallback((counts: number[], so: boolean[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(counts));
-    localStorage.setItem(SOLDOUT_KEY, JSON.stringify(so));
-    channel.postMessage({ type: "update", counts, soldOut: so } as SyncMessage);
-  }, [channel]);
+  const postUpdate = useCallback((newState: State) => {
+    setState(newState);
+    fetch("/api/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newState),
+    }).catch(() => {});
+  }, []);
 
   const increment = useCallback((index: number) => {
-    const newCounts = [...cocktailCounts];
-    newCounts[index] = cocktailCounts[index] + 1;
-    setCocktailCounts(newCounts);
-    broadcast(newCounts, soldOut);
-  }, [cocktailCounts, soldOut, broadcast]);
+    const s = stateRef.current;
+    const newCounts = [...s.counts];
+    newCounts[index] = s.counts[index] + 1;
+    postUpdate({ counts: newCounts, soldOut: s.soldOut });
+  }, [postUpdate]);
 
   const decrement = useCallback((index: number) => {
-    if (cocktailCounts[index] <= 0) return;
-    const newCounts = [...cocktailCounts];
-    newCounts[index] = cocktailCounts[index] - 1;
-    setCocktailCounts(newCounts);
-    broadcast(newCounts, soldOut);
-  }, [cocktailCounts, soldOut, broadcast]);
+    const s = stateRef.current;
+    if (s.counts[index] <= 0) return;
+    const newCounts = [...s.counts];
+    newCounts[index] = s.counts[index] - 1;
+    postUpdate({ counts: newCounts, soldOut: s.soldOut });
+  }, [postUpdate]);
 
   const toggleSoldOut = useCallback((index: number) => {
-    const newSoldOut = [...soldOut];
+    const s = stateRef.current;
+    const newSoldOut = [...s.soldOut];
     newSoldOut[index] = !newSoldOut[index];
-    setSoldOut(newSoldOut);
-    broadcast(cocktailCounts, newSoldOut);
-  }, [cocktailCounts, soldOut, broadcast]);
+    postUpdate({ counts: s.counts, soldOut: newSoldOut });
+  }, [postUpdate]);
 
   const reset = useCallback(() => {
-    const newCounts = new Array(cocktails.length).fill(0);
-    const newSoldOut = new Array(cocktails.length).fill(false);
-    setCocktailCounts(newCounts);
-    setSoldOut(newSoldOut);
-    broadcast(newCounts, newSoldOut);
-  }, [broadcast]);
+    postUpdate({ ...DEFAULT_STATE });
+  }, [postUpdate]);
 
-  const totalDrinksServed = cocktailCounts.reduce((sum, count) => sum + count, 0);
+  const totalDrinksServed = state.counts.reduce((sum, count) => sum + count, 0);
 
-  const mostPopularIndex = cocktailCounts.reduce((maxIdx, count, idx, arr) => {
+  const mostPopularIndex = state.counts.reduce((maxIdx, count, idx, arr) => {
     if (count === 0) return maxIdx;
     if (maxIdx === -1) return idx;
     return count > arr[maxIdx] ? idx : maxIdx;
   }, -1);
 
   return {
-    cocktailCounts,
+    cocktailCounts: state.counts,
     totalDrinksServed,
     mostPopularIndex,
-    soldOut,
+    soldOut: state.soldOut,
     increment,
     decrement,
     toggleSoldOut,
