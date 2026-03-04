@@ -67,7 +67,7 @@ export const CocktailCard = ({ cocktail, count, isMostPopular, justCompleted, is
       )}
 
       {/* Image */}
-      <div className="relative aspect-[3/4] overflow-hidden">
+      <div className="relative aspect-[4/5] overflow-hidden">
         <img
           src={cocktail.image}
           alt={cocktail.name}
