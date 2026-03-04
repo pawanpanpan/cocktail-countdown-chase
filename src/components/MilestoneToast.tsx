@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface MilestoneToastProps {
   drinkCount: number;
@@ -6,37 +6,80 @@ interface MilestoneToastProps {
   onHide: () => void;
 }
 
+const CONFETTI_COLORS = [
+  'hsl(215, 40%, 20%)',
+  'hsl(38, 60%, 50%)',
+  'hsl(38, 55%, 65%)',
+  'hsl(215, 30%, 40%)',
+  'hsl(40, 20%, 96%)',
+];
+
+const Confetti = ({ delay, color }: { delay: number; color: string }) => {
+  const randomX = Math.random() * 100;
+  const randomSize = 6 + Math.random() * 10;
+  const randomDuration = 2 + Math.random() * 2;
+
+  return (
+    <div
+      className="absolute animate-confetti"
+      style={{
+        left: `${randomX}%`,
+        top: '-20px',
+        width: `${randomSize}px`,
+        height: `${randomSize}px`,
+        backgroundColor: color,
+        borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+        animationDelay: `${delay}s`,
+        animationDuration: `${randomDuration}s`,
+      }}
+    />
+  );
+};
+
 export const MilestoneToast = ({ drinkCount, isVisible, onHide }: MilestoneToastProps) => {
+  const [confettiPieces, setConfettiPieces] = useState<{ id: number; delay: number; color: string }[]>([]);
+  const [showText, setShowText] = useState(false);
+
   useEffect(() => {
     if (isVisible) {
-      const timer = setTimeout(onHide, 3000);
-      return () => clearTimeout(timer);
+      const pieces = Array.from({ length: 80 }, (_, i) => ({
+        id: i,
+        delay: Math.random() * 3,
+        color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      }));
+      setConfettiPieces(pieces);
+      const textTimer = setTimeout(() => setShowText(true), 500);
+      const hideTimer = setTimeout(onHide, 15000);
+      return () => {
+        clearTimeout(textTimer);
+        clearTimeout(hideTimer);
+      };
+    } else {
+      setConfettiPieces([]);
+      setShowText(false);
     }
   }, [isVisible, onHide]);
 
   if (!isVisible) return null;
 
   return (
-    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-none w-full max-w-2xl px-6">
-      <div className="animate-scale-in text-center">
-        <div className="bg-primary border-2 border-accent rounded-2xl shadow-2xl px-10 py-8">
-          <div className="text-6xl mb-3">🍸</div>
-          <p className="font-display tracking-[0.4em] text-xl text-accent/70 uppercase mb-1">
-            Milestone
-          </p>
-          <div className="flex items-center gap-4 justify-center my-3">
-            <div className="flex-1 h-px bg-accent/40" />
-            <span className="text-accent text-sm">✦</span>
-            <div className="flex-1 h-px bg-accent/40" />
+    <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 bg-background/60" />
+
+      {confettiPieces.map(piece => (
+        <Confetti key={piece.id} delay={piece.delay} color={piece.color} />
+      ))}
+
+      {showText && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center animate-scale-in">
+            <div className="text-5xl mb-4">🍸</div>
+            <h2 className="font-display text-4xl md:text-6xl lg:text-7xl text-primary mb-2 animate-float uppercase">
+              {drinkCount} Drinks Served!
+            </h2>
           </div>
-          <p className="font-display text-8xl md:text-9xl text-accent tracking-wide leading-none">
-            {drinkCount}
-          </p>
-          <p className="font-display text-3xl md:text-4xl text-foreground tracking-widest mt-2 uppercase">
-            Drinks Served
-          </p>
         </div>
-      </div>
+      )}
     </div>
   );
 };

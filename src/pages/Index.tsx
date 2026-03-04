@@ -37,7 +37,7 @@ const Index = () => {
     if (newTotal >= TOTAL_GOAL && prevTotal < TOTAL_GOAL) {
       setShowCelebration(true);
       if (celebrationTimerRef.current) clearTimeout(celebrationTimerRef.current);
-      celebrationTimerRef.current = setTimeout(() => setShowCelebration(false), 20000);
+      celebrationTimerRef.current = setTimeout(() => setShowCelebration(false), 30000);
     }
 
     if (newTotal > prevTotal && newTotal % 10 === 0 && newTotal <= TOTAL_GOAL) {
