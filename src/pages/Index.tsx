@@ -18,13 +18,14 @@ const Index = () => {
   } = useCocktailSync();
 
   const [justCompletedIndex, setJustCompletedIndex] = useState<number | null>(null);
-  const [milestoneToast, setMilestoneToast] = useState<{ name: string; visible: boolean }>({
-    name: "",
+  const [milestoneToast, setMilestoneToast] = useState<{ count: number; visible: boolean }>({
+    count: 0,
     visible: false,
   });
   const [showCelebration, setShowCelebration] = useState(false);
 
   const prevTotalRef = useRef(totalDrinksServed);
+  const celebrationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isUnlocked = totalDrinksServed >= TOTAL_GOAL;
 
@@ -35,10 +36,12 @@ const Index = () => {
 
     if (newTotal >= TOTAL_GOAL && prevTotal < TOTAL_GOAL) {
       setShowCelebration(true);
+      if (celebrationTimerRef.current) clearTimeout(celebrationTimerRef.current);
+      celebrationTimerRef.current = setTimeout(() => setShowCelebration(false), 20000);
     }
 
     if (newTotal > prevTotal && newTotal % 10 === 0 && newTotal <= TOTAL_GOAL) {
-      setMilestoneToast({ name: `${newTotal} drinks served!`, visible: true });
+      setMilestoneToast({ count: newTotal, visible: true });
     }
 
     prevTotalRef.current = newTotal;
@@ -47,6 +50,12 @@ const Index = () => {
   const hideMilestoneToast = () => {
     setMilestoneToast(prev => ({ ...prev, visible: false }));
   };
+
+  useEffect(() => {
+    return () => {
+      if (celebrationTimerRef.current) clearTimeout(celebrationTimerRef.current);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background overflow-hidden relative">
@@ -83,7 +92,7 @@ const Index = () => {
       </div>
 
       <MilestoneToast
-        cocktailName={milestoneToast.name}
+        drinkCount={milestoneToast.count}
         isVisible={milestoneToast.visible && !showCelebration}
         onHide={hideMilestoneToast}
       />
