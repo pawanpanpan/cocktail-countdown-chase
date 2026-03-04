@@ -28,7 +28,7 @@ export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: Progr
   const progressPercentage = Math.min((drinksServed / totalGoal) * 100, 100);
 
   return (
-    <header className="relative text-center py-8 px-4">
+    <header className="relative text-center py-4 px-4">
       {/* Admin button - subtle, top-right */}
       <button
         onClick={() => navigate('/admin')}
@@ -38,17 +38,10 @@ export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: Progr
         <Settings size={20} />
       </button>
 
-      {/* Logo */}
-      <div className="mb-2 flex justify-center">
-        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-primary flex items-center justify-center">
-          <span className="font-display text-2xl md:text-3xl text-primary">T</span>
-        </div>
-      </div>
-
-      <h1 className="font-display text-6xl md:text-7xl lg:text-8xl text-primary mb-1 uppercase">
+      <h1 className="font-display text-5xl md:text-6xl lg:text-7xl text-primary mb-1 uppercase tracking-[0.08em]">
         The Thorndike
       </h1>
-      <p className="text-sm md:text-base uppercase tracking-[0.3em] text-muted-foreground mb-6">
+      <p className="text-xs md:text-sm uppercase tracking-[0.4em] text-muted-foreground mb-4">
         Speakeasy
       </p>
 
