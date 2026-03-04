@@ -44,7 +44,7 @@ export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: Progr
         <img
           src="/logo.png"
           alt="Logo"
-          className="mx-auto mb-2 max-h-20 w-auto object-contain"
+          className="mx-auto mb-3 max-h-40 w-auto object-contain"
           onError={() => setLogoVisible(false)}
         />
       )}
