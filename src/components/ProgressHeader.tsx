@@ -29,14 +29,14 @@ export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: Progr
   const progressPercentage = Math.min((drinksServed / totalGoal) * 100, 100);
 
   return (
-    <header className="relative text-center py-4 px-4">
+    <header className="relative text-center py-2 px-4">
       {/* Admin button - subtle, top-right */}
       <button
         onClick={() => navigate('/admin')}
-        className="absolute top-4 right-4 p-2 text-muted-foreground/30 hover:text-muted-foreground transition-colors rounded-full"
+        className="absolute top-2 right-4 p-2 text-muted-foreground/30 hover:text-muted-foreground transition-colors rounded-full"
         aria-label="Control Panel"
       >
-        <Settings size={20} />
+        <Settings size={18} />
       </button>
 
       {/* Logo: place your logo file at public/logo.png (or .svg/.jpg/.webp) */}
@@ -44,7 +44,7 @@ export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: Progr
         <img
           src="/logo.png"
           alt="Logo"
-          className="mx-auto mb-3 max-h-56 w-auto object-contain"
+          className="mx-auto mb-1 max-h-20 w-auto object-contain"
           onError={() => setLogoVisible(false)}
         />
       )}
@@ -52,17 +52,17 @@ export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: Progr
       {/* Fallback text title shown when no logo is present */}
       {!logoVisible && (
         <>
-          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl text-primary mb-1 uppercase tracking-[0.08em]">
+          <h1 className="font-display text-3xl md:text-4xl text-primary mb-0.5 uppercase tracking-[0.08em]">
             The Thorndike
           </h1>
-          <p className="text-xs md:text-sm uppercase tracking-[0.4em] text-muted-foreground mb-4">
+          <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground mb-1">
             Speakeasy
           </p>
         </>
       )}
 
       <div className="max-w-xl mx-auto">
-        <p className="text-xl md:text-2xl font-sans text-foreground mb-4">
+        <p className="text-base md:text-lg font-sans text-foreground mb-1">
           DRINKS SERVED:{" "}
           <span className={`font-bold ${isCelebrating ? 'text-accent' : 'text-primary'}`}>
             {displayCount}
@@ -71,7 +71,7 @@ export const ProgressHeader = ({ drinksServed, totalGoal, isCelebrating }: Progr
         </p>
 
         {/* Progress Bar */}
-        <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+        <div className="relative h-1.5 bg-muted rounded-full overflow-hidden">
           <div
             className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out bg-primary"
             style={{ width: `${progressPercentage}%` }}

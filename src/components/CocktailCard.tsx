@@ -92,8 +92,8 @@ export const CocktailCard = ({ cocktail, count, isMostPopular, justCompleted, is
       </div>
 
       {/* Name */}
-      <div className="p-3 text-center bg-card">
-        <h3 className="font-sans text-sm font-bold tracking-wide text-foreground uppercase">
+      <div className="py-1.5 px-2 text-center bg-card">
+        <h3 className="font-sans text-xs font-bold tracking-wide text-foreground uppercase leading-tight">
           {cocktail.name}
         </h3>
       </div>

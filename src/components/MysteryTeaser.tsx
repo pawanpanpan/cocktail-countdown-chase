@@ -5,8 +5,8 @@ interface MysteryTeaserProps {
 
 export const MysteryTeaser = ({ drinksRemaining, isUnlocked }: MysteryTeaserProps) => {
   return (
-    <div className="text-center py-2 px-4">
-      <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full border border-border bg-card">
+    <div className="text-center py-1 px-4">
+      <div className="inline-flex items-center gap-3 px-4 py-1 rounded-full border border-border bg-card">
         {isUnlocked ? (
           <p className="text-sm md:text-base text-accent font-bold uppercase tracking-wider">
             ✦ Secret drinks unlocked ✦
